@@ -1,0 +1,109 @@
+<div id="ls-trace-concept" class="viz-carousel" aria-label="Trace console design concepts">
+<style>
+#ls-trace-concept { --ls-bg:light-dark(#f5f6f8,#11151d);--ls-panel:light-dark(#fff,#1a202c);--ls-ink:light-dark(#172033,#edf1f8);--ls-sub:light-dark(#58657a,#a9b5ca);--ls-line:light-dark(#dce2ec,#343d4e);--ls-accent:light-dark(#385fd6,#a6baff);--ls-soft:light-dark(#eaf0ff,#263655);--ls-warn:light-dark(#815800,#efce88);color:var(--ls-ink);font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.5 }
+#ls-trace-concept *{box-sizing:border-box}
+#ls-trace-concept .ls-shell{min-height:760px;background:var(--ls-bg);border:1px solid var(--ls-line);border-radius:16px;overflow:hidden}
+#ls-trace-concept .ls-head{background:var(--ls-panel);padding:20px 110px 18px 22px;border-bottom:1px solid var(--ls-line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+#ls-trace-concept .ls-brand{font-weight:650;letter-spacing:-.4px;font-size:19px}
+#ls-trace-concept .ls-eyebrow{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--ls-sub);margin-bottom:5px}
+#ls-trace-concept .ls-sub{color:var(--ls-sub);font-size:12px}
+#ls-trace-concept .ls-chip{display:inline-block;font-size:11px;padding:4px 8px;border-radius:6px;background:var(--ls-soft);color:var(--ls-accent)}
+#ls-trace-concept .ls-body{padding:22px}
+#ls-trace-concept .ls-title{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+#ls-trace-concept h2{font-size:23px;line-height:1.25;margin:0 0 6px;font-weight:600;letter-spacing:-.6px}
+#ls-trace-concept h3{font-size:13px;margin:0;font-weight:600}
+#ls-trace-concept button{font:inherit;color:var(--ls-ink);background:var(--ls-panel);border:1px solid var(--ls-line);border-radius:7px;padding:8px 11px;text-align:left}
+#ls-trace-concept button[aria-pressed=true]{background:var(--ls-soft);border-color:var(--ls-accent)}
+#ls-trace-concept .ls-grid{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(230px,1fr);gap:16px}
+#ls-trace-concept .ls-panel{background:var(--ls-panel);border:1px solid var(--ls-line);border-radius:10px;min-width:0}
+#ls-trace-concept .ls-panel-head{padding:14px 16px;border-bottom:1px solid var(--ls-line);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+#ls-trace-concept .ls-pad{padding:16px}
+#ls-trace-concept .ls-note{padding:11px 14px;border-left:3px solid var(--ls-warn);background:var(--ls-panel);font-size:12px;margin:16px 0;color:var(--ls-sub)}
+#ls-trace-concept .ls-axis{display:flex;justify-content:space-between;color:var(--ls-sub);font-size:11px;margin:0 0 12px 95px}
+#ls-trace-concept .ls-lane{display:grid;grid-template-columns:85px minmax(0,1fr);gap:10px;align-items:center;margin:12px 0;font-size:12px}
+#ls-trace-concept .ls-track{background:var(--ls-bg);height:32px;position:relative;border-radius:4px}
+#ls-trace-concept .ls-bar{position:absolute;top:3px;bottom:3px;padding:2px 6px;font-size:11px;border:0;border-radius:4px;background:var(--ls-soft);color:var(--ls-accent);white-space:nowrap;overflow:hidden}
+#ls-trace-concept .ls-bar[aria-pressed=true]{background:var(--ls-accent);color:var(--ls-panel);border:0}
+#ls-trace-concept .ls-row{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--ls-line);font-size:12px}
+#ls-trace-concept .ls-row span:first-child{color:var(--ls-sub)}
+#ls-trace-concept .ls-code{font-family:ui-monospace,monospace;font-size:11px;overflow-wrap:anywhere;background:var(--ls-bg);padding:12px;border-radius:7px;margin-top:14px;white-space:pre-wrap}
+#ls-trace-concept .ls-event{display:block;width:100%;border:0;border-radius:0;border-bottom:1px solid var(--ls-line);padding:12px 16px;font-size:12px}
+#ls-trace-concept .ls-event time{display:inline-block;width:58px;color:var(--ls-sub);font-family:ui-monospace,monospace}
+#ls-trace-concept .ls-event small{display:block;margin-left:58px;color:var(--ls-sub);font-size:11px}
+#ls-trace-concept .ls-footer{margin-top:16px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;color:var(--ls-sub);font-size:11px}
+#ls-trace-concept .ls-review{display:grid;grid-template-columns:200px minmax(0,1fr);gap:16px}
+#ls-trace-concept .ls-turn{display:block;width:100%;margin-bottom:8px}
+#ls-trace-concept .ls-bubble{max-width:90%;padding:14px;border-radius:10px;background:var(--ls-bg);margin:12px 0}
+#ls-trace-concept .ls-bubble.robot{margin-left:auto;background:var(--ls-soft)}
+#ls-trace-concept .ls-step{padding:14px 0;border-bottom:1px solid var(--ls-line);display:flex;gap:12px}
+#ls-trace-concept .ls-dot{width:24px;height:24px;border-radius:50%;background:var(--ls-soft);color:var(--ls-accent);display:grid;place-items:center;flex-shrink:0;font-size:12px}
+#ls-trace-concept .ls-missing{padding:16px;border:1px dashed var(--ls-line);border-radius:8px;color:var(--ls-sub);font-size:12px;margin-top:16px}
+@media(max-width:700px){#ls-trace-concept .ls-grid,#ls-trace-concept .ls-review{grid-template-columns:1fr}#ls-trace-concept .ls-shell{min-height:1120px}#ls-trace-concept .ls-head{padding:18px 100px 18px 16px}#ls-trace-concept .ls-body{padding:14px}#ls-trace-concept h2{font-size:20px}}
+</style>
+<section data-variant="Trace studio" aria-label="Trace studio layout">
+<div class="ls-shell">
+ <header class="ls-head"><div><div class="ls-brand">LinkSoul / Trace studio</div><div class="ls-sub">A3 Ultra · Session demo-042 · Turn 3</div></div><div><span class="ls-chip">DESIGN CONCEPT</span><div class="ls-sub">Illustrative data · no robot connected</div></div></header>
+ <div class="ls-body">
+  <div class="ls-title"><div><div class="ls-eyebrow">Session explorer / 18 Nov 2026</div><h2>What happened after you spoke?</h2><div class="ls-sub">“Hello, what can you help me with?”</div></div><span class="ls-chip">Recorded session</span></div>
+  <div class="ls-grid">
+   <div>
+    <div class="ls-panel"><div class="ls-panel-head"><h3>Turn waterfall</h3><span class="ls-sub">SDK receipt time · seconds</span></div><div class="ls-pad">
+     <div class="ls-axis"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span></div>
+     <div class="ls-lane"><span>User audio</span><div class="ls-track"><button type="button" class="ls-bar cursor-interaction" data-stage="audio" style="left:0;width:25%" aria-pressed="false">Input</button></div></div>
+     <div class="ls-lane"><span>App ASR</span><div class="ls-track"><button type="button" class="ls-bar cursor-interaction" data-stage="asr" style="left:0;width:31%" aria-pressed="false">Transcribe</button></div></div>
+     <div class="ls-lane"><span>App model</span><div class="ls-track"><button type="button" class="ls-bar cursor-interaction" data-stage="model" style="left:31%;width:23%" aria-pressed="true">Reply</button></div></div>
+     <div class="ls-lane"><span>Audio sent</span><div class="ls-track"><button type="button" class="ls-bar cursor-interaction" data-stage="tts" style="left:48%;width:43%" aria-pressed="false">Streamed TTS</button></div></div>
+     <div class="ls-lane"><span>Robot state</span><div class="ls-track"><button type="button" class="ls-bar cursor-interaction" data-stage="state" style="left:56%;width:44%" aria-pressed="false">Playing → finished</button></div></div>
+    </div></div>
+    <div class="ls-note">Timing is observed at the SDK. Audio sent and robot playback are separate events.</div>
+    <div class="ls-panel"><div class="ls-panel-head"><h3>Event stream</h3><span class="ls-sub">Select an event to inspect</span></div>
+     <button class="ls-event cursor-interaction" data-stage="audio" type="button"><time>0.000</time>Voice activity started<small>Inbound callback · event_demo_003</small></button>
+     <button class="ls-event cursor-interaction" data-stage="asr" type="button"><time>1.240</time>Final transcript produced<small>App ASR → on_asr_final</small></button>
+     <button class="ls-event cursor-interaction" data-stage="model" type="button"><time>1.250</time>Reply interrupted; model request started<small>App trace · first text delta at 1.920 s</small></button>
+     <button class="ls-event cursor-interaction" data-stage="tts" type="button"><time>1.920</time>First synthesized audio chunk sent<small>Outbound response · item_demo_007</small></button>
+     <button class="ls-event cursor-interaction" data-stage="state" type="button"><time>2.240</time>Robot reported playback started<small>on_state · tts_status</small></button>
+    </div>
+   </div>
+   <aside class="ls-panel"><div class="ls-panel-head"><h3>Event inspector</h3><span class="ls-chip" id="ls-source">App measured</span></div><div class="ls-pad" aria-live="polite"><div class="ls-eyebrow" id="ls-kind">Model execution</div><h3 id="ls-detail-title">Reply generation</h3><div class="ls-row"><span>Started</span><strong id="ls-start">+1.250 s</strong></div><div class="ls-row"><span>First output</span><strong id="ls-first">+1.920 s</strong></div><div class="ls-row"><span>Scope</span><span id="ls-scope">Your model service</span></div><pre class="ls-code" id="ls-payload">event_id: event_demo_003
+item_id: item_demo_007
+operation: llm.generate
+first_delta_ms: 670
+status: complete</pre><div class="ls-missing"><strong>Capture coverage</strong><br>Input audio: captured<br>App model calls: measured<br>Robot playback: state reported<br>Camera video: not enabled<br>Platform model internals: unavailable</div></div></aside>
+  </div>
+  <div class="ls-footer"><span>Audio → transcript → app model → response → reported playback</span><span>Media access and retention configured per session</span></div>
+ </div>
+</div>
+</section>
+<section data-variant="Conversation review" aria-label="Conversation review layout" hidden>
+<div class="ls-shell">
+ <header class="ls-head"><div><div class="ls-brand">LinkSoul / Session review</div><div class="ls-sub">A3 Ultra · Session demo-042</div></div><div><span class="ls-chip">DESIGN CONCEPT</span><div class="ls-sub">Illustrative data · no robot connected</div></div></header>
+ <div class="ls-body">
+  <div class="ls-title"><div><div class="ls-eyebrow">Conversation / evidence</div><h2>Review the interaction, turn by turn</h2></div></div>
+  <div class="ls-review">
+   <aside class="ls-panel ls-pad"><h3>Conversation turns</h3><p class="ls-sub">Select a turn</p><button class="ls-turn cursor-interaction" type="button" data-turn="welcome" aria-pressed="true">Greeting<br><span class="ls-sub">“What can you help me with?”</span></button><button class="ls-turn cursor-interaction" type="button" data-turn="interrupt" aria-pressed="false">Interruption<br><span class="ls-sub">“Stop, please.”</span></button><div class="ls-missing">Video not enabled<br>Media viewer appears only when captured.</div></aside>
+   <div class="ls-panel"><div class="ls-panel-head"><h3 id="ls-review-title">Greeting</h3><span class="ls-chip" id="ls-review-status">Completed</span></div><div class="ls-pad" aria-live="polite"><div class="ls-bubble"><div class="ls-eyebrow">You / captured transcript</div><div id="ls-user-text">Hello, what can you help me with?</div></div><div class="ls-bubble robot"><div class="ls-eyebrow">A3 Ultra / outbound text</div><div id="ls-robot-text">I can answer questions and help with supported tasks. What would you like to try?</div></div><div class="ls-step"><span class="ls-dot">1</span><div><h3 id="ls-step-one">Input received</h3><div class="ls-sub" id="ls-evidence-one">Audio frames and final ASR linked to event_demo_003.</div></div></div><div class="ls-step"><span class="ls-dot">2</span><div><h3 id="ls-step-two">Response produced</h3><div class="ls-sub" id="ls-evidence-two">App model and TTS spans linked to the outbound response.</div></div></div><div class="ls-step"><span class="ls-dot">3</span><div><h3 id="ls-step-three">Playback reported complete</h3><div class="ls-sub" id="ls-evidence-three">Robot tts_status reported finished. No external microphone verification.</div></div></div><div class="ls-missing">Evidence labels: SDK captured · App measured · Robot reported · Unavailable</div></div></div>
+  </div>
+  <div class="ls-footer"><span>Review saved evidence without sending robot commands</span><span>SDK events ≠ all internal robot activity</span></div>
+ </div>
+</div>
+</section>
+<script>
+(()=>{
+const root=document.getElementById('ls-trace-concept');
+const stages={
+audio:['SDK captured','Audio input','Voice activity and audio frames','+0.000 s','+0.020 s','Inbound audio stream','flag: 0 → 1 → 2\nevent_id: event_demo_003\nformat: PCM (example)\nrecording: available'],
+asr:['App measured','Speech recognition','Final transcript','+0.000 s','+1.240 s','Your ASR service','method: on_asr_final\nevent_id: event_demo_003\ntext: Hello, what can you help me with?'],
+model:['App measured','Model execution','Reply generation','+1.250 s','+1.920 s','Your model service','event_id: event_demo_003\nitem_id: item_demo_007\noperation: llm.generate\nfirst_delta_ms: 670\nstatus: complete'],
+tts:['SDK captured','Outbound audio','Synthesized audio sent','+1.920 s','+1.920 s','Outbound SDK response','method: on_tts_item_delta\nitem_id: item_demo_007\nlast_chunk_at: +3.640 s\nplayback_proof: separate state event'],
+state:['Robot reported','Robot playback state','Playback started → finished','+2.240 s','+4.000 s','State received at collector','callback: on_state\nstate_name: tts_status\nstate: finished\nevent_id: event_demo_003\nitem_id: item_demo_007']};
+function stage(key,save){const d=stages[key]||stages.model;['ls-source','ls-kind','ls-detail-title','ls-start','ls-first','ls-scope','ls-payload'].forEach((id,i)=>root.querySelector('#'+id).textContent=d[i]);root.querySelectorAll('.ls-bar').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.stage===key)));if(save)persist({stage:key});}
+function turn(key,save){const stop=key==='interrupt';root.querySelectorAll('[data-turn]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.turn===key)));const vals={'ls-review-title':stop?'Interruption':'Greeting','ls-review-status':stop?'Interrupted':'Completed','ls-user-text':stop?'Stop, please.':'Hello, what can you help me with?','ls-robot-text':stop?'Previous response cut short. No new spoken reply sent.':'I can answer questions and help with supported tasks. What would you like to try?','ls-step-one':stop?'New input received':'Input received','ls-evidence-one':stop?'Final ASR: “Stop, please.” · event_demo_004':'Audio frames and final ASR linked to event_demo_003.','ls-step-two':stop?'Interruption sent':'Response produced','ls-evidence-two':stop?'App sent on_interrupt before any new reply content.':'App model and TTS spans linked to the outbound response.','ls-step-three':stop?'Robot reported interrupted':'Playback reported complete','ls-evidence-three':stop?'tts_status for the previous utterance changed to interrupted.':'Robot tts_status reported finished. No external microphone verification.'};Object.entries(vals).forEach(([id,text])=>root.querySelector('#'+id).textContent=text);if(save)persist({turn:key});}
+let state={stage:'model',turn:'welcome',...(window.openai?.widgetState?.modelContent||{})};
+function persist(patch){state={...state,...patch};window.openai?.setWidgetState({modelContent:state,privateContent:null}).catch(()=>{});}
+root.querySelectorAll('[data-stage]').forEach(b=>b.addEventListener('click',()=>stage(b.dataset.stage,true)));
+root.querySelectorAll('[data-turn]').forEach(b=>b.addEventListener('click',()=>turn(b.dataset.turn,true)));
+stage(state.stage,false);turn(state.turn,false);
+window.addEventListener('openai:set_globals',e=>{const s=e.detail?.globals?.widgetState?.modelContent;if(s){state={...state,...s};stage(state.stage,false);turn(state.turn,false);}});
+})();
+</script>
+</div>
