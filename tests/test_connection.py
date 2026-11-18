@@ -224,3 +224,61 @@ def test_config_numeric_validation(monkeypatch):
     monkeypatch.setenv('STUDIO_STALE_SECONDS', 'nan')
     monkeypatch.setenv('STUDIO_LOG_BACKUPS', '-1')
     assert len(Settings.from_env().validate()) >= 2
+
+
+def test_robot_credentials_do_not_require_agent_id(settings):
+    s = replace(settings, mode='robot', gateway='wss://example.invalid/sdk',
+                app_id='app', app_key='key', app_secret='secret')
+    assert s.validate() == []
+
+
+def test_auto_discovery_keeps_one_agent_across_reconnect(settings):
+    c = Collector(replace(settings, mode='robot'))
+    try:
+        assert c.emit('input', agent_id='early', event_id='early') is False
+        c.emit('robot_online', agent_id='robot-a')
+        assert c.snapshot()['selected_agent_id'] == 'robot-a'
+        assert c.emit('input', agent_id='robot-a', event_id='one') is True
+        c.emit('gateway_disconnected')
+        c.emit('gateway_connected')
+        assert c.emit('robot_online', agent_id='robot-b') is False
+        assert c.emit('input', agent_id='robot-b', event_id='two') is False
+        assert c.snapshot()['selected_agent_id'] == 'robot-a'
+        assert 'another agent' in ' '.join(c.snapshot()['problems']).lower()
+        assert c.emit('robot_online', agent_id='robot-a') is True
+    finally:
+        c.diag.close()
+
+
+def test_discovery_adapter_and_report_without_network(settings, monkeypatch):
+    from linksoul_agentsdk import AgentSdk
+    monkeypatch.setattr(AgentSdk, 'initialize', lambda self: None)
+    s = replace(settings, mode='robot', gateway='wss://example.invalid/sdk',
+                app_id='test-app', app_key='test-key', app_secret='test-secret')
+    with TestClient(create_app(s)) as client:
+        c = client.app.state.collector
+        callback = c.adapter.callback
+        assert client.get('/health').status_code == 200
+        assert client.get('/api/state').json()['selected_agent_id'] is None
+        client.post('/api/checks/begin')
+        c.emit('gateway_connected')
+        callback.on_robot_online('discovered-agent', None)
+        first = Mock()
+        callback.on_request('discovered-agent', 'event-1', 'private', None, first)
+        first.on_error.assert_called_once()
+        c.emit('gateway_disconnected')
+        c.emit('gateway_connected')
+        callback.on_robot_online('discovered-agent', None)
+        callback.on_request('discovered-agent', 'event-2', 'private', None, Mock())
+        c.flush()
+        report = client.post('/api/checks/save').json()
+        assert report['result'] == 'Passed'
+        assert report['selected_agent_id'] == 'discovered-agent'
+        callback.on_robot_online('other-agent', None)
+        other = Mock()
+        callback.on_request('other-agent', 'other-event', 'private', None, other)
+        other.on_error.assert_not_called()
+        c.flush()
+        assert c.last_input.event_id == 'event-2'
+        assert client.get('/health').status_code == 503
+    AgentSdk._reset_for_test()

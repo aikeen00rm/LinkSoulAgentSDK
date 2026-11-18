@@ -1,0 +1,27 @@
+name: linksoul-studio
+
+services:
+  studio:
+    image: linksoul-studio:0.1.0
+    build: .
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      STUDIO_DATA_DIR: /data
+    ports:
+      - "127.0.0.1:${STUDIO_PORT:-8000}:8000"
+    volumes:
+      - studio-data:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  studio-data:
+    name: linksoul-studio-data

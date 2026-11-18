@@ -9,6 +9,12 @@ description = "A3 Ultra connection console"
 requires-python = ">=3.12,<3.15"
 dependencies = ["fastapi==0.121.3", "uvicorn==0.38.0", "Jinja2==3.1.6", "linksoul-agentsdk==1.5.0a1"]
 
+[dependency-groups]
+dev = ["httpx==0.28.1", "pytest==9.0.1"]
+
+[tool.uv.sources]
+linksoul-agentsdk = { url = "https://open-eu.agibot.com/docs/agentsdk_docs/python/v1.5.0/dist/linksoul_agentsdk-1.5.0a1-py3-none-any.whl" }
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

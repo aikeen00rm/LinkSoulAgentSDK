@@ -1,10 +1,12 @@
 FROM python:3.14-slim
+COPY --from=ghcr.io/astral-sh/uv:0.12.9 /uv /uvx /bin/
 WORKDIR /app
-COPY requirements.lock pyproject.toml ./
-RUN pip install --no-cache-dir -r requirements.lock
+ENV UV_PYTHON_DOWNLOADS=never UV_LINK_MODE=copy UV_COMPILE_BYTECODE=1
+COPY uv.lock pyproject.toml ./
+RUN uv sync --locked --no-dev --no-install-project --python /usr/local/bin/python
 COPY src ./src
-RUN pip install --no-cache-dir --no-deps .
-ENV STUDIO_DATA_DIR=/data
+RUN uv sync --locked --no-dev --no-editable --python /usr/local/bin/python
+ENV STUDIO_DATA_DIR=/data PATH="/app/.venv/bin:$PATH"
 RUN useradd --uid 10001 --create-home studio && mkdir /data && chown studio:studio /data
 USER studio
 VOLUME /data

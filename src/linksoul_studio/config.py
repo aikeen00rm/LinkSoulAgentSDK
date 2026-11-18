@@ -49,8 +49,8 @@ class Settings:
         if self.mode not in {"fixture", "robot"}:
             errors.append("Set STUDIO_MODE to fixture or robot, then restart.")
         if self.mode == "robot":
-            if not all((self.app_id, self.app_key, self.app_secret, self.agent_id)):
-                errors.append("Set all LINKSOUL credentials and LINKSOUL_AGENT_ID on the server, then restart.")
+            if not all((self.app_id, self.app_key, self.app_secret)):
+                errors.append("Set LINKSOUL_APP_ID, LINKSOUL_APP_KEY and LINKSOUL_APP_SECRET credentials on the server, then restart.")
             try:
                 u = urlsplit(self.gateway)
                 if u.scheme != "wss" or not u.hostname or u.username or u.password or u.query or u.fragment:
@@ -61,4 +61,4 @@ class Settings:
 
     @property
     def secrets(self):
-        return [v for v in (self.app_id, self.app_key, self.app_secret, self.agent_id) if v]
+        return [v for v in (self.app_id, self.app_key, self.app_secret) if v]

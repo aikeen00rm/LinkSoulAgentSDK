@@ -9,6 +9,8 @@ function render(s) {
   $('gateway').className = s.gateway === 'Connected' ? 'good' : 'warn';
   $('gateway-note').textContent = s.gateway === 'Connected' ? 'Gateway is open. Robot input is checked separately.' : 'Check network, regional endpoint and application access.';
   $('presence').textContent = s.presence;
+  $('agent-id').textContent = s.selected_agent_id || 'Waiting for discovery';
+  $('agent-selection').textContent = s.agent_selection;
   $('presence').className = s.presence === 'Online' ? 'good' : 'warn';
   $('freshness').textContent = s.freshness;
   $('freshness').className = s.freshness === 'Fresh' ? 'good' : 'warn';

@@ -44,10 +44,11 @@ class RobotAdapter:
                 emit("robot_offline", agent_id=agent_id)
 
             def on_request(self, agent_id, event_id, text, param, response):
-                if agent_id != s.agent_id:
+                if s.agent_id and agent_id != s.agent_id:
                     return
                 # Capture input arrival only. Text is never persisted in M1.
-                emit("input", agent_id=agent_id, event_id=event_id)
+                if emit("input", agent_id=agent_id, event_id=event_id) is False:
+                    return
                 # This is an explicit connection-test agent, not a conversation provider.
                 # Fail the request visibly instead of silently consuming its response chain.
                 response.on_error(event_id, 503, "Connection test agent: inference is not configured")

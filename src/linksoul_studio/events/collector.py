@@ -10,7 +10,7 @@ from time import monotonic
 from uuid import uuid4
 
 from linksoul_studio import __version__
-from linksoul_studio.diagnostics.store import Diagnostics, SafeSDKHandler
+from linksoul_studio.diagnostics.store import Diagnostics, SafeSDKHandler, redact
 from linksoul_studio.events.model import Event, utc
 from linksoul_studio.sdk.fixture import FixtureAdapter
 from linksoul_studio.sdk.robot import RobotAdapter
@@ -27,6 +27,7 @@ LABELS = {
     "input": "New ASR input received · conversation text not recorded",
     "response_attempted": "Test-agent error response attempted · delivery and execution unconfirmed",
     "adapter_error": "SDK adapter error · check test-agent setup and network; diagnostics saved",
+    "agent_conflict": "Another agent reported online · selected agent retained; configure LINKSOUL_AGENT_ID explicitly and restart",
 }
 
 
@@ -34,6 +35,8 @@ class Collector:
     def __init__(self, settings):
         self.settings = settings
         self.lock = threading.RLock()
+        self.selected_agent_id = settings.agent_id if settings.mode == "robot" else "fixture-agent"
+        self.agent_conflict = False
         self.queue = queue.Queue(maxsize=512)
         self.activity = deque(maxlen=120)
         self.window = []
@@ -83,20 +86,31 @@ class Collector:
 
     def emit(self, kind, agent_id=None, event_id=None, item_id=None):
         if self.stopping:
-            return
-        if self.settings.mode == "robot" and agent_id and agent_id != self.settings.agent_id:
-            return
+            return False
         if kind not in LABELS:
-            return
+            return False
+        if self.settings.mode == "robot" and kind in {"robot_online", "robot_offline", "robot_state", "input", "response_attempted"}:
+            with self.lock:
+                if not agent_id:
+                    return False
+                if not self.selected_agent_id and kind == "robot_online":
+                    self.selected_agent_id = agent_id
+                if agent_id != self.selected_agent_id:
+                    if kind == "robot_online" and not self.settings.agent_id and not self.agent_conflict:
+                        self.agent_conflict = True
+                        self.emit("agent_conflict")
+                    return False
         source = "fixture" if self.settings.mode == "fixture" else "sdk"
         event = Event(self.settings.mode, self.adapter.run_id, kind, source,
                       direction="outbound" if kind == "response_attempted" else "inbound",
                       agent_id=agent_id, event_id=event_id, item_id=item_id)
         try:
             self.queue.put_nowait(event)
+            return True
         except queue.Full:
             with self.lock:
                 self.dropped += 1
+            return False
 
     def _consume(self):
         while True:
@@ -168,9 +182,12 @@ class Collector:
             if self.probe_error: problems.append(self.probe_error)
             if self.report_error: problems.append(self.report_error)
             if self.adapter_error: problems.append(LABELS["adapter_error"])
+            if self.agent_conflict: problems.append(LABELS["agent_conflict"])
             if self.dropped: problems.append("Evidence queue overflow. Some callbacks were lost; restart and repeat verification.")
             return {
                 "mode": self.settings.mode, "versions": self.versions,
+                "selected_agent_id": redact(self.selected_agent_id, self.settings.secrets) or None,
+                "agent_selection": "Fixture simulation" if self.settings.mode == "fixture" else "Configured filter" if self.settings.agent_id else "Discovered from online callback" if self.selected_agent_id else "Waiting for robot online callback",
                 "gateway": self.gateway, "presence": presence,
                 "freshness": "Fresh" if fresh else "Waiting for new input" if not self.last_input or not after_connect else "Stale / unavailable",
                 "input_utc": self.last_input.collector_utc if self.last_input else None,
@@ -211,6 +228,8 @@ class Collector:
                       "result": "Passed" if all(c["result"] == "Passed" for c in checks) else "Failed",
                       "checks": checks, "evidence": [e.public() for e in matched],
                       "problems": snap["problems"],
+                      "selected_agent_id": snap["selected_agent_id"],
+                      "agent_selection": snap["agent_selection"],
                       "limitations": ["Fixture evidence is not hardware evidence"] if self.settings.mode == "fixture" else ["ASR test agent only; physical robot identity and firmware require operator confirmation"],
                       "restart_durability": "Pending separate service restart check"}
             try:
