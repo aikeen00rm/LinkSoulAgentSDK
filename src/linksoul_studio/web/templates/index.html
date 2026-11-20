@@ -1,28 +1,45 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Connection · LinkSoul Studio</title><link rel="stylesheet" href="/static/studio.css"><script src="/static/studio.js" defer></script></head>
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="studio-token" content="{{ token }}">
+  <title>LinkSoul Studio · Connection</title>
+  <link rel="stylesheet" href="/static/studio.css">
+  <script src="/static/studio.js" defer></script>
+</head>
 <body>
-<header><a class="brand" href="/">◈ <span>LinkSoul <small>Interaction studio</small></span></a><div class="header-meta"><span id="mode" class="pill">Loading mode…</span><span>A3 Ultra · One test agent</span></div></header>
-<nav aria-label="Implemented milestones"><a href="/" aria-current="page">01 <span>Connection</span></a><span class="roadmap">Recorder foundation / Milestone 1</span></nav>
-<main>
-<div class="heading"><div><p class="eyebrow">LIVE CONNECTION WORKSPACE</p><h1>Is fresh input reaching you?</h1><p class="muted">Follow the connection from the gateway to your selected robot.</p></div><div class="live"><span class="dot"></span><span id="feed">Connecting to console…</span></div></div>
-<div id="errors" role="alert"></div><p id="announcer" class="sr-only" aria-live="polite"></p>
-<div class="cards">
-<section class="metric"><p class="eyebrow">01 / GATEWAY</p><h2 id="gateway">Unknown</h2><p id="gateway-note">Waiting for connection evidence.</p><span class="source" id="gateway-source">Unavailable</span></section>
-<section class="metric"><p class="eyebrow">02 / ROBOT PRESENCE</p><h2 id="presence">Unknown</h2><p>Platform agent: <strong id="agent-id">Waiting for discovery</strong></p><p id="agent-selection">Waiting for robot online callback</p><span class="source" id="presence-source">Unavailable</span></section>
-<section class="metric"><p class="eyebrow">03 / INPUT FRESHNESS</p><h2 id="freshness">Unavailable</h2><p id="input-note">No input has arrived.</p><span class="source" id="input-source">Unavailable</span></section>
-</div>
-<div class="workspace">
-<div class="primary">
-<section class="panel"><div class="panel-title"><h2>Connection activity</h2><span class="source" id="activity-mode">Awaiting mode</span></div><p class="panel-intro">A live view of callbacks and connection changes. Times shown in your browser’s time zone.</p><ol id="timeline" class="timeline"><li>No connection evidence yet.</li></ol></section>
-<section id="fixture" class="panel" hidden><div class="panel-title"><h2>Fixture lab</h2><span class="pill">SIMULATION ONLY</span></div><div class="pad"><p>Run a local scenario through the collector. These actions do not connect to hardware.</p><div class="actions"><button data-fixture="recovery" class="primary-button">Run reconnect + fresh input</button><button data-fixture="no-input">Run recovery without input</button><button data-fixture="invalid-config">Test invalid configuration</button><button data-fixture="storage-failure">Test storage failure</button></div><details><summary>Individual simulation steps</summary><div class="actions"><button data-fixture="connect">Connect gateway</button><button data-fixture="online">Robot online</button><button data-fixture="input">New input</button><button data-fixture="disconnect">Disconnect gateway</button><button data-fixture="offline">Robot offline</button><button data-fixture="adapter-error">Adapter error</button><button data-fixture="clear-error">Clear fixture errors</button></div></details></div></section>
-</div>
-<aside>
-<section class="panel verify"><div class="panel-title"><h2>Guided verification</h2><span id="result" class="pill">Not run</span></div><div class="pad"><p id="verify-mode" class="eyebrow">MODE UNKNOWN</p><ol class="steps"><li>Start a new check before connecting.</li><li>Connect the test agent and speak a phrase.</li><li>Disconnect the gateway, reconnect, then speak again.</li><li>Save the evidence check below.</li></ol><div class="actions"><button id="begin">Start new check</button><button id="save">Save check report</button></div><p id="check-status" class="muted">No check in progress.</p><div id="checks"></div><a id="download" hidden>Download saved report ↓</a><div class="guidance" id="guidance">Fresh input after reconnect is required. Gateway recovery alone is insufficient.</div><p class="tiny">Release gate: real robot input after reconnect, plus diagnostics surviving a service restart. Hardware verification is pending.</p></div></section>
-<section class="panel"><div class="panel-title"><h2>Capture & storage</h2></div><div class="pad"><dl><dt>Connection & arrival metadata</dt><dd>Captured</dd><dt>Conversation text / audio / video</dt><dd>Not recorded in M1</dd><dt>Built-in agent interactions</dt><dd>Coverage unproven</dd><dt>Automatic diagnostics</dt><dd id="diagnostics">Checking…</dd></dl><p class="tiny">Logs rotate at 1 MiB × 5 backups by default. Reports stay in the persistent data folder.</p></div></section>
-</aside>
-</div>
-<section class="panel setup"><div class="panel-title"><h2>Robot setup checklist</h2><span class="source">Hardware verification pending</span></div><div class="pad"><p id="setup-context">Fixture mode needs no credentials. Switch modes using server configuration and restart the service.</p><div class="setup-grid"><div><h3>1. Confirm access</h3><p>Find the A3 Ultra firmware version in the robot settings. Confirm developer access and your regional LinkSoul application with your administrator.</p></div><div><h3>2. Create a test agent</h3><p>Use an isolated ASR-text → LLM test agent, associated with this robot. This M1 adapter reports inference unavailable; it does not provide a spoken answer.</p></div><div><h3>3. Configure the server</h3><p>Set the region’s gateway and application credentials in the server environment. The agent ID is discovered when the robot comes online; an explicit ID is an optional filter. See the project README. Never paste secrets into this console.</p></div></div></div></section>
+<header class="app-header"><a class="brand" href="/" aria-label="LinkSoul Studio home"><span class="brand-icon">L</span>LinkSoul <span>Studio</span></a><span id="mode" class="mode">Loading mode…</span><span class="header-device">AGIBOT A3 Ultra</span><span id="versions" class="version"></span></header>
+<main><nav class="screen-nav" aria-label="Screens"><a href="/" aria-current="page">M1 Connection</a><a href="/conversations">M2 Conversations →</a></nav>
+  <div class="page-title"><div><p class="eyebrow">MILESTONE 01 / CONNECTION</p><h1>See the connection.<br>Verify the evidence.</h1><p class="intro">Gateway, robot presence and fresh input — checked separately.</p></div><div class="release"><span class="release-dot"></span><div><strong>M1 connection test</strong><p>Hardware acceptance pending</p></div></div></div>
+  <div id="offline" class="notice danger" role="alert" hidden>The console cannot reach the service. Refresh after checking that the container is running. Displayed evidence may be stale.</div>
+  <div id="errors" class="notice danger" role="alert" hidden></div>
+  <div id="incident" class="notice warning" role="status" hidden></div>
+  <section class="status-grid" aria-label="Connection status">
+    <article class="status-card"><div class="status-top"><span class="eyebrow">01 / GATEWAY</span><span id="gateway-dot" class="dot"></span></div><h2 id="gateway">Waiting…</h2><p>SDK transport connection</p><span class="evidence" id="gateway-evidence">Evidence unavailable</span></article>
+    <article class="status-card"><div class="status-top"><span class="eyebrow">02 / ROBOT PRESENCE</span><span id="presence-dot" class="dot"></span></div><h2 id="presence">Waiting…</h2><p id="presence-age">No online callback received</p><span class="evidence" id="presence-evidence">Evidence unavailable</span></article>
+    <article class="status-card"><div class="status-top"><span class="eyebrow">03 / INPUT FRESHNESS</span><span id="input-dot" class="dot"></span></div><h2 id="input">Waiting…</h2><p id="input-age">New input required after reconnect</p><span class="evidence" id="input-evidence">Evidence unavailable</span></article>
+  </section>
+  <div class="identity"><div><span class="muted">Selected agent</span><strong id="agent">Not discovered</strong></div><div><span class="muted">Selection</span><strong id="selection">Awaiting online callback</strong></div><div><span class="muted">Physical association</span><strong id="association">Unverified</strong></div></div>
+  <div class="workspace">
+    <section class="panel verify"><div class="panel-heading"><div><p class="eyebrow">GUIDED CHECK</p><h2>Verify M1</h2></div><span id="check-status" class="pill">Not run</span></div>
+      <p id="mode-help" class="section-intro">Loading verification controls…</p>
+      <div id="fixture-controls" hidden>
+        <button class="primary" data-action="fixture-recovery">Run reconnect + fresh input <span aria-hidden="true">↗</span></button>
+        <div class="failure-actions"><button data-action="fixture-no-input">Test missing input</button><button data-action="fixture-configuration">Test invalid configuration</button><button data-action="fixture-storage">Test storage failure</button></div>
+      </div>
+      <div id="robot-controls" hidden><div class="failure-actions"><button class="primary" data-action="connect">Connect test agent</button><button data-action="disconnect">Disconnect gateway</button></div><p class="hint">Isolated ASR-text agent only. This test attempts an inference-unavailable error; it does not generate conversation or motion.</p></div>
+      <ol id="steps" class="steps"></ol>
+      <div id="result" class="result" role="status" aria-live="polite">Run a check to collect evidence. No result is assumed.</div>
+      <details class="manual"><summary>Manual verification controls</summary><p class="hint">Start while disconnected. Connect → online → speak → disconnect → reconnect → online → speak again. Finish to save an evidence-derived report.</p><div class="failure-actions"><button data-action="start-check">Start check</button><button data-action="finish-check">Finish + save report</button></div><div id="fixture-steps" hidden><p class="eyebrow">SIMULATED STEPS ONLY</p><div class="failure-actions"><button data-action="step-connected">Gateway connected</button><button data-action="step-online">Agent online</button><button data-action="step-input">New ASR input</button><button data-action="step-disconnected">Gateway disconnected</button><button data-action="step-offline">Agent offline</button><button data-action="reset">Reset fixture state</button></div></div></details>
+    </section>
+    <aside class="side-stack">
+      <section class="panel"><div class="panel-heading"><h2>Capture coverage</h2><span class="pill neutral">M1 only</span></div><dl class="coverage"><div><dt>Connection & input arrival</dt><dd>Enabled</dd></div><div><dt>Input / response text</dt><dd>Available in M2 review</dd></div><div><dt>Audio, image & video</dt><dd>Not recorded</dd></div><div><dt>Physical execution</dt><dd>Unconfirmed</dd></div></dl><p class="hint">Input content stays out of M1 logs. Open M2 Conversations for saved text review. Media review is not yet implemented.</p></section>
+      <section class="panel"><div class="panel-heading"><h2>Evidence storage</h2><span id="storage" class="pill">Checking</span></div><p class="storage-detail">Diagnostics save automatically and rotate. Check reports persist across service restarts.</p><div class="storage-row"><span>Captured event loss</span><strong id="dropped">0</strong></div><div class="storage-row"><span>Saved reports in this mode</span><strong id="report-count">0</strong></div><p class="hint">Reports are retained until manually archived. No conversation bodies or media are included.</p></section>
+      <details class="panel setup"><summary>A3 Ultra setup checklist</summary><ol><li>Confirm firmware, developer access and regional gateway with your administrator.</li><li>Associate an isolated ASR-text → LLM test agent with this robot.</li><li>Set application ID/key/secret in the server’s .env. Never enter secrets here.</li><li>Set robot mode and recreate the container. Start a check, then connect.</li><li>Confirm the discovered platform agent belongs to your physical A3 Ultra.</li></ol><p class="hint">Only one passive callback is registered. Built-in conversation observation is not established.</p></details>
+    </aside>
+  </div>
+  <section class="panel history"><div class="panel-heading"><div><p class="eyebrow">PERSISTENT EVIDENCE</p><h2>Saved verification reports</h2></div><span class="muted">Current mode · latest 100</span></div><div id="reports" class="reports"><p class="empty">No saved reports yet.</p></div></section>
+  <section class="panel history"><div class="panel-heading"><div><p class="eyebrow">LIVE METADATA</p><h2>Connection activity</h2></div><span class="muted">Latest 12 events · resets on restart</span></div><div id="events"><p class="empty">Waiting for connection evidence.</p></div></section>
+  <footer><span>LinkSoul Studio · single robot / single connection</span><span id="footer-mode">Hardware verification pending</span></footer>
 </main>
-<footer><span id="build">Build loading…</span><span id="sdk">SDK loading…</span><span id="python">Python loading…</span><span>Evidence first · No robot command controls</span></footer>
 </body></html>

@@ -1,70 +1,69 @@
 const $ = id => document.getElementById(id);
-let busy = false, lastActivity = '', requestError = '', lastAnnouncement = '';
-const time = value => value ? new Date(value).toLocaleString() : 'Unavailable';
-function node(tag, text, cls) { const e = document.createElement(tag); e.textContent = text; if (cls) e.className = cls; return e; }
+const steps = ['Gateway connected', 'Selected agent online', 'First input received', 'Gateway disconnected', 'Gateway reconnected', 'Selected agent online again', 'New input after reconnect'];
+let busy = false, latestEvents = '', latestReports = '';
+const text = (id, value) => { $(id).textContent = value; };
+const el = (tag, value, cls) => { const e = document.createElement(tag); if (value !== undefined) e.textContent = value; if (cls) e.className = cls; return e; };
+function message(id, content) { text(id, content || ''); $(id).hidden = !content; }
 function render(s) {
-  $('mode').textContent = s.mode === 'fixture' ? 'FIXTURE · SIMULATED' : s.mode === 'robot' ? 'ROBOT · LIVE ADAPTER' : 'INVALID MODE';
-  $('fixture').hidden = s.mode !== 'fixture';
-  $('gateway').textContent = s.gateway;
-  $('gateway').className = s.gateway === 'Connected' ? 'good' : 'warn';
-  $('gateway-note').textContent = s.gateway === 'Connected' ? 'Gateway is open. Robot input is checked separately.' : 'Check network, regional endpoint and application access.';
-  $('presence').textContent = s.presence;
-  $('agent-id').textContent = s.selected_agent_id || 'Waiting for discovery';
-  $('agent-selection').textContent = s.agent_selection;
-  $('presence').className = s.presence === 'Online' ? 'good' : 'warn';
-  $('freshness').textContent = s.freshness;
-  $('freshness').className = s.freshness === 'Fresh' ? 'good' : 'warn';
-  $('input-note').textContent = s.input_utc ? `${time(s.input_utc)} · ${s.input_age}s ago` : 'No input received in this service run.';
-  for (const [id, present, label] of [['gateway-source', s.gateway !== 'Unknown', 'SDK captured'], ['presence-source', s.presence !== 'Unknown', 'Robot reported'], ['input-source', s.input_utc, 'Application measured · SDK input arrival']]) {
-    $(id).textContent = present ? (s.mode === 'fixture' ? 'Fixture simulation' : label) : 'Unavailable';
+  const fixture = s.mode === 'fixture';
+  text('mode', `${s.mode} · ${fixture ? 'simulated evidence' : 'hardware evidence only'}`);
+  $('mode').classList.toggle('robot', !fixture);
+  text('versions', `Build ${s.versions.studio} / SDK ${s.versions.sdk} / Python ${s.versions.python}`);
+  text('footer-mode', fixture ? 'Fixture checks never count as hardware acceptance.' : 'Physical association and hardware acceptance remain operator-verified.');
+  for (const name of ['gateway','presence','input']) text(name, s[name]);
+  for (const [name, good] of [['gateway',s.gateway==='Connected'],['presence',s.presence==='Online reported'],['input',s.input==='Fresh']]) {
+    $(`${name}-dot`).className = `dot ${good ? 'good' : 'warn'}`;
+    text(`${name}-evidence`, fixture ? 'Fixture simulation · no hardware evidence' : 'SDK captured · callback evidence');
   }
-  $('activity-mode').textContent = `${s.mode.toUpperCase()} EVIDENCE`;
-  $('diagnostics').textContent = s.diagnostics;
-  $('diagnostics').className = s.diagnostics === 'Saved' ? 'good' : 'bad';
-  $('verify-mode').textContent = `${s.mode.toUpperCase()} CHECK · ${s.mode === 'fixture' ? 'NO HARDWARE EVIDENCE' : 'SELECTED ASR TEST AGENT'}`;
-  $('check-status').textContent = s.checking ? 'Check in progress · collecting new evidence.' : s.report ? `Saved ${time(s.report.saved_utc)}` : 'No check in progress.';
-  $('save').disabled = busy || !s.checking;
-  $('setup-context').textContent = s.mode === 'fixture' ? 'Fixture mode needs no credentials. Switch modes using server configuration and restart the service.' : 'Robot mode uses the selected ASR test agent. Confirm the following with your administrator before verification.';
-  $('build').textContent = `Build ${s.versions.build} · ${s.mode}`;
-  $('sdk').textContent = `SDK ${s.versions['linksoul-agentsdk']}`;
-  $('python').textContent = `Python ${s.versions.python}`;
-  const key = s.activity.map(e => e.record_id).join();
-  if (key !== lastActivity) {
-    lastActivity = key;
-    $('timeline').replaceChildren(...s.activity.map(e => {
-      const li = document.createElement('li');
-      li.append(node('time', time(e.collector_utc)), node('span', e.summary), node('small', `${e.evidence} · #${e.sequence} · ${e.record_id.slice(0, 8)}`));
-      return li;
-    }));
+  text('presence-age', s.presence_age === null ? 'No current online evidence' : `Last selected-agent activity ${s.presence_age.toFixed(1)} s ago`);
+  text('input-age', s.input_age === null ? 'New input required after reconnect' : `Latest input ${s.input_age.toFixed(1)} s ago`);
+  text('agent', s.agent_id || 'Not discovered'); text('selection', s.selection); text('association', s.physical_association);
+  message('errors', [...s.errors, s.storage_error].filter(Boolean).join(' '));
+  message('incident', s.incident ? `${fixture ? 'Fixture scenario: ' : ''}${s.incident}. ${fixture ? 'Run the recovery check to clear scenario state. Persistent storage or queue failures require a restart.' : 'Check setup and reconnect; repeat the check after resolving the issue.'}` : '');
+  $('fixture-controls').hidden = !fixture; $('fixture-steps').hidden = !fixture; $('robot-controls').hidden = s.mode !== 'robot';
+  text('mode-help', fixture ? 'Try the complete recovery path, then a failure case. Every result is derived from collected events and saved automatically.' : 'Start a check while disconnected, connect the isolated test agent, speak, disconnect/reconnect and speak again. Finish to save the report.');
+  text('storage', s.storage); $('storage').className = `pill ${s.storage === 'Ready' ? 'good' : 'bad'}`;
+  text('dropped', s.dropped); text('report-count', s.reports.length);
+  const r = s.last_report;
+  text('check-status', s.check ? 'In progress' : r ? `${r.result} · ${s.mode}` : 'Not run');
+  $('check-status').className = `pill ${s.check ? '' : r ? r.result === 'Passed' ? 'good' : 'bad' : 'neutral'}`;
+  const observed = s.check?.steps || r?.steps || steps.map(label => ({label,observed:false}));
+  $('steps').replaceChildren(...observed.map(v => el('li',v.label,v.observed?'done':'')));
+  if (r && !s.check) {
+    text('result', `${r.result} · ${r.mode}. ${r.reason} ${r.saved ? 'Report saved to persistent storage.' : 'Report NOT saved.'}`);
+    $('result').className = `result ${r.result === 'Passed' ? 'good' : 'bad'}`;
+  } else { text('result',s.check ? 'Collecting evidence. Complete the seven steps, then finish and save.' : 'Run a check to collect evidence. No result is assumed.'); $('result').className='result'; }
+  const reportKey = JSON.stringify(s.reports);
+  if (latestReports !== reportKey) {
+    latestReports = reportKey;
+    $('reports').replaceChildren(...(s.reports.length ? s.reports.map(r => {
+      const row=el('div',undefined,'report-row');
+      row.append(el('span',`${r.result} · ${r.mode}`,`pill ${r.result==='Passed'?'good':'bad'}`),el('span',r.scenario),el('span',new Date(r.ended_at).toLocaleString(),'muted'));
+      const link=el('a','Download report'); link.href=`/api/reports/${r.mode}/${r.id}`; row.append(link);return row;
+    }) : [el('p','No saved reports yet.','empty')]));
   }
-  $('errors').replaceChildren(...[...s.problems, ...(requestError ? [requestError] : [])].map(p => node('div', p, 'alert')));
-  const r = s.report;
-  const announcement = `${s.mode}. Gateway ${s.gateway}. Robot ${s.presence}. Input ${s.freshness}. Check ${r?.result || 'not run'}.`;
-  if (announcement !== lastAnnouncement) { $('announcer').textContent = announcement; lastAnnouncement = announcement; }
-  $('result').textContent = r ? `${r.result} · ${r.mode}` : 'Not run';
-  $('result').className = `pill ${r ? (r.result === 'Passed' ? 'good' : 'bad') : ''}`;
-  $('checks').replaceChildren(...(r?.checks || []).map(c => {
-    const row = node('div', '', 'check'); row.append(node('span', c.label), node('b', c.result, c.result === 'Passed' ? 'good' : 'bad')); return row;
-  }));
-  $('download').hidden = !r?.download;
-  if (r?.download) $('download').href = r.download;
-  $('guidance').textContent = s.problems.length ? s.problems[0] : s.freshness === 'Fresh' ? 'Fresh input has arrived in this connection. Save a check to assess the full reconnect sequence.' : 'Waiting for fresh input. Check the robot’s agent association and ASR input configuration. Reconnecting the gateway alone cannot pass.';
+  const eventKey = `${s.run_id}:${s.events[0]?.sequence}`;
+  if (latestEvents !== eventKey) {
+    latestEvents=eventKey;
+    $('events').replaceChildren(...(s.events.length ? s.events.slice(0,12).map(e => {
+      const row=el('div',undefined,'event-row'), time=el('time',new Date(e.timestamp).toLocaleTimeString()); time.dateTime=e.timestamp;
+      const main=el('div',e.summary,'event-main'); main.append(el('small',`#${e.sequence}${e.agent_id ? ' · '+e.agent_id : ''}${e.event_id ? ' · '+e.event_id : ''}`));
+      row.append(time,main,el('span',`${e.mode} / ${e.source}`,'event-source'));return row;
+    }) : [el('p','Waiting for connection evidence.','empty')]));
+  }
 }
 async function refresh() {
-  try { const res = await fetch('/api/state'); if (!res.ok) throw new Error(); render(await res.json()); $('feed').textContent = 'Console live · updates every second'; }
-  catch { $('feed').textContent = 'Console unavailable · retrying'; $('gateway').textContent = 'Unknown · console disconnected'; $('presence').textContent = 'Unknown'; $('freshness').textContent = 'Unavailable'; }
-}
-async function action(path) {
   if (busy) return;
-  busy = true; requestError = '';
-  document.querySelectorAll('button').forEach(b => b.disabled = true);
-  try {
-    const res = await fetch(path, {method: 'POST'});
-    if (!res.ok) { const data = await res.json(); requestError = data.detail || 'Action failed. Retry from the console.'; }
-  } catch { requestError = 'Console connection lost. Check the service and retry.'; }
-  finally { busy = false; document.querySelectorAll('button').forEach(b => b.disabled = false); await refresh(); }
+  try { const res=await fetch('/api/state'); if(!res.ok)throw new Error(); render(await res.json()); $('offline').hidden=true; }
+  catch { $('offline').hidden=false; }
 }
-document.querySelectorAll('[data-fixture]').forEach(b => b.addEventListener('click', () => action(`/api/fixture/${b.dataset.fixture}`)));
-$('begin').addEventListener('click', () => action('/api/checks/begin'));
-$('save').addEventListener('click', () => action('/api/checks/save'));
-refresh(); setInterval(refresh, 1000);
+for (const button of document.querySelectorAll('[data-action]')) button.addEventListener('click',async()=>{
+  if(busy)return;busy=true;
+  document.querySelectorAll('[data-action]').forEach(b=>b.disabled=true);
+  try {
+    const response=await fetch(`/api/action/${button.dataset.action}`,{method:'POST',headers:{'x-studio-token':document.querySelector('meta[name=studio-token]').content}});
+    const data=await response.json(); if(!response.ok)throw new Error(data.detail || 'Operation failed.'); render(data);$('offline').hidden=true;
+  } catch(error) {message('incident',error.message || 'Operation failed. Refresh the console.');}
+  finally {busy=false;document.querySelectorAll('[data-action]').forEach(b=>b.disabled=false);}
+});
+refresh();setInterval(refresh,1000);

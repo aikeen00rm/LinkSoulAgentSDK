@@ -1,12 +1,11 @@
-name: linksoul-studio
-
+name: linksoul-studio-v2
 services:
   studio:
-    image: linksoul-studio:0.1.0
+    image: linksoul-studio-v2:0.2.0
     build: .
     init: true
     restart: unless-stopped
-    stop_grace_period: 30s
+    stop_grace_period: 70s
     env_file:
       - path: .env
         required: false
@@ -21,7 +20,6 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-
 volumes:
   studio-data:
-    name: linksoul-studio-data
+    name: linksoul-studio-v2-data

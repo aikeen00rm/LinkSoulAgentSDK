@@ -1,9 +1,13 @@
+.git
 .venv
-data
+.pytest_cache
+__pycache__
+*.pyc
 .env
 .env.*
-__pycache__
-.pytest_cache
-.git
+data
 docs
 tests
+build
+dist
+*.egg-info

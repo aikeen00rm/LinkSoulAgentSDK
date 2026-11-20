@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "linksoul-studio"
-version = "0.1.0"
-description = "A3 Ultra connection console"
+version = "0.2.0"
+description = "A3 Ultra saved conversation recorder and verification console"
 requires-python = ">=3.12,<3.15"
 dependencies = ["fastapi==0.121.3", "uvicorn==0.38.0", "Jinja2==3.1.6", "linksoul-agentsdk==1.5.0a1"]
 
